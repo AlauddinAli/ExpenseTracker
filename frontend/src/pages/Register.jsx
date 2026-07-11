@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Register() {
   const navigate = useNavigate();
@@ -9,47 +10,31 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!fullName || !username || !email || !password) {
       alert("Please fill all fields");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          fullName,
+          username,
+          email,
+          password,
+        }
+      );
 
-    const emailExists = users.find(
-      (user) => user.email.toLowerCase() === email.toLowerCase()
-    );
+      alert(response.data.message);
 
-    if (emailExists) {
-      alert("Email already registered!");
-      return;
+      navigate("/");
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Registration Failed"
+      );
     }
-
-    const usernameExists = users.find(
-      (user) => user.username.toLowerCase() === username.toLowerCase()
-    );
-
-    if (usernameExists) {
-      alert("Username already taken!");
-      return;
-    }
-
-    const newUser = {
-      id: Date.now(),
-      fullName,
-      username,
-      email,
-      password,
-    };
-
-    users.push(newUser);
-
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Registration Successful!");
-
-    navigate("/");
   };
 
   return (

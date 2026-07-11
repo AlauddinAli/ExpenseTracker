@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
@@ -7,30 +8,34 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-    const user = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password
-    );
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(response.data.user)
+      );
 
-    if (!user) {
-      alert("Invalid email or password!");
-      return;
+      alert(response.data.message);
+
+      navigate("/home");
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Login Failed"
+      );
     }
-
-    localStorage.setItem("currentUser", JSON.stringify(user));
-
-    alert("Login Successful!");
-
-    navigate("/home");
   };
 
   return (
